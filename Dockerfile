@@ -2,6 +2,19 @@ FROM ubuntu:20.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
+# Fix 'self-signed certificate in certificate chain' error in curl and friends
+COPY Nuvoton-Enterprise-Root-CA.crt /usr/local/share/ca-certificates/
+COPY Websense-Public-Primary-Certificate-Authority.crt /usr/local/share/ca-certificates/
+COPY Websense-Public-Primary-Certificate-Authority-V2.crt /usr/local/share/ca-certificates/
+RUN apt-get update \
+    && apt-get install -y ca-certificates \
+    && update-ca-certificates
+
+# Fix Buildroot pip doesn't use system certificate store
+#
+# NOTE: Starting with pip v24.2, system certificates are used by default.
+ENV PIP_CERT=/etc/ssl/certs/ca-certificates.crt
+
 # Install essential Yocto Project host packages
 # Clean up the apt cache by removing /var/lib/apt/lists toreduces the image size
 # Install repo tool with tinghua mirror: https://mirrors.tuna.tsinghua.edu.cn/git/git-repo
